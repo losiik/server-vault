@@ -1,16 +1,31 @@
-# server_vault
+# Server Vault
 
-A new Flutter project.
+**Server Vault** — это Flutter-приложение для управления подключениями, пользователями и хранения данных через локальную базу данных с использованием Drift (sqlite).
 
-## Getting Started
+Проект создан как учебный, но имеет полноценную архитектуру и легко расширяется.
 
-This project is a starting point for a Flutter application.
+🚀 Технологии
 
-A few resources to get you started if this is your first Flutter project:
+# В проекте используются:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Flutter — UI и кроссплатформенность
+- Drift — локальная база данных
+- Sqflite — SQLite-движок
+- dartssh2 + xterm — SSH-клиент и терминал
+- path_provider — доступ к системным директориям
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Генерация кода (Drift)
+
+Для авто-генерации файлов *.g.dart используется build_runner.
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+# Функции проекта
+
+- Добавление и хранение пользователей (Drift + SQLite)
+- Авторизация через локальную БД
+- Подключение по SSH (dartssh2)
+- Встроенный терминал (xterm)
+- Кроссплатформенность: Windows / macOS
