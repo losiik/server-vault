@@ -338,6 +338,12 @@ class $ConnectionsTable extends Connections
   late final GeneratedColumn<String> passphrase = GeneratedColumn<String>(
       'passphrase', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _systemKeyPathMeta =
+      const VerificationMeta('systemKeyPath');
+  @override
+  late final GeneratedColumn<String> systemKeyPath = GeneratedColumn<String>(
+      'system_key_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -365,6 +371,7 @@ class $ConnectionsTable extends Connections
         privateKey,
         publicKey,
         passphrase,
+        systemKeyPath,
         createdAt,
         lastUsed
       ];
@@ -433,6 +440,12 @@ class $ConnectionsTable extends Connections
           passphrase.isAcceptableOrUnknown(
               data['passphrase']!, _passphraseMeta));
     }
+    if (data.containsKey('system_key_path')) {
+      context.handle(
+          _systemKeyPathMeta,
+          systemKeyPath.isAcceptableOrUnknown(
+              data['system_key_path']!, _systemKeyPathMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -472,6 +485,8 @@ class $ConnectionsTable extends Connections
           .read(DriftSqlType.string, data['${effectivePrefix}public_key']),
       passphrase: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}passphrase']),
+      systemKeyPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}system_key_path']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       lastUsed: attachedDatabase.typeMapping
@@ -497,6 +512,7 @@ class Connection extends DataClass implements Insertable<Connection> {
   final String? privateKey;
   final String? publicKey;
   final String? passphrase;
+  final String? systemKeyPath;
   final DateTime createdAt;
   final DateTime? lastUsed;
   const Connection(
@@ -511,6 +527,7 @@ class Connection extends DataClass implements Insertable<Connection> {
       this.privateKey,
       this.publicKey,
       this.passphrase,
+      this.systemKeyPath,
       required this.createdAt,
       this.lastUsed});
   @override
@@ -534,6 +551,9 @@ class Connection extends DataClass implements Insertable<Connection> {
     }
     if (!nullToAbsent || passphrase != null) {
       map['passphrase'] = Variable<String>(passphrase);
+    }
+    if (!nullToAbsent || systemKeyPath != null) {
+      map['system_key_path'] = Variable<String>(systemKeyPath);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || lastUsed != null) {
@@ -563,6 +583,9 @@ class Connection extends DataClass implements Insertable<Connection> {
       passphrase: passphrase == null && nullToAbsent
           ? const Value.absent()
           : Value(passphrase),
+      systemKeyPath: systemKeyPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(systemKeyPath),
       createdAt: Value(createdAt),
       lastUsed: lastUsed == null && nullToAbsent
           ? const Value.absent()
@@ -585,6 +608,7 @@ class Connection extends DataClass implements Insertable<Connection> {
       privateKey: serializer.fromJson<String?>(json['privateKey']),
       publicKey: serializer.fromJson<String?>(json['publicKey']),
       passphrase: serializer.fromJson<String?>(json['passphrase']),
+      systemKeyPath: serializer.fromJson<String?>(json['systemKeyPath']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       lastUsed: serializer.fromJson<DateTime?>(json['lastUsed']),
     );
@@ -604,6 +628,7 @@ class Connection extends DataClass implements Insertable<Connection> {
       'privateKey': serializer.toJson<String?>(privateKey),
       'publicKey': serializer.toJson<String?>(publicKey),
       'passphrase': serializer.toJson<String?>(passphrase),
+      'systemKeyPath': serializer.toJson<String?>(systemKeyPath),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'lastUsed': serializer.toJson<DateTime?>(lastUsed),
     };
@@ -621,6 +646,7 @@ class Connection extends DataClass implements Insertable<Connection> {
           Value<String?> privateKey = const Value.absent(),
           Value<String?> publicKey = const Value.absent(),
           Value<String?> passphrase = const Value.absent(),
+          Value<String?> systemKeyPath = const Value.absent(),
           DateTime? createdAt,
           Value<DateTime?> lastUsed = const Value.absent()}) =>
       Connection(
@@ -635,6 +661,8 @@ class Connection extends DataClass implements Insertable<Connection> {
         privateKey: privateKey.present ? privateKey.value : this.privateKey,
         publicKey: publicKey.present ? publicKey.value : this.publicKey,
         passphrase: passphrase.present ? passphrase.value : this.passphrase,
+        systemKeyPath:
+            systemKeyPath.present ? systemKeyPath.value : this.systemKeyPath,
         createdAt: createdAt ?? this.createdAt,
         lastUsed: lastUsed.present ? lastUsed.value : this.lastUsed,
       );
@@ -653,6 +681,9 @@ class Connection extends DataClass implements Insertable<Connection> {
       publicKey: data.publicKey.present ? data.publicKey.value : this.publicKey,
       passphrase:
           data.passphrase.present ? data.passphrase.value : this.passphrase,
+      systemKeyPath: data.systemKeyPath.present
+          ? data.systemKeyPath.value
+          : this.systemKeyPath,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       lastUsed: data.lastUsed.present ? data.lastUsed.value : this.lastUsed,
     );
@@ -672,6 +703,7 @@ class Connection extends DataClass implements Insertable<Connection> {
           ..write('privateKey: $privateKey, ')
           ..write('publicKey: $publicKey, ')
           ..write('passphrase: $passphrase, ')
+          ..write('systemKeyPath: $systemKeyPath, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastUsed: $lastUsed')
           ..write(')'))
@@ -691,6 +723,7 @@ class Connection extends DataClass implements Insertable<Connection> {
       privateKey,
       publicKey,
       passphrase,
+      systemKeyPath,
       createdAt,
       lastUsed);
   @override
@@ -708,6 +741,7 @@ class Connection extends DataClass implements Insertable<Connection> {
           other.privateKey == this.privateKey &&
           other.publicKey == this.publicKey &&
           other.passphrase == this.passphrase &&
+          other.systemKeyPath == this.systemKeyPath &&
           other.createdAt == this.createdAt &&
           other.lastUsed == this.lastUsed);
 }
@@ -724,6 +758,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
   final Value<String?> privateKey;
   final Value<String?> publicKey;
   final Value<String?> passphrase;
+  final Value<String?> systemKeyPath;
   final Value<DateTime> createdAt;
   final Value<DateTime?> lastUsed;
   const ConnectionsCompanion({
@@ -738,6 +773,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
     this.privateKey = const Value.absent(),
     this.publicKey = const Value.absent(),
     this.passphrase = const Value.absent(),
+    this.systemKeyPath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.lastUsed = const Value.absent(),
   });
@@ -753,6 +789,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
     this.privateKey = const Value.absent(),
     this.publicKey = const Value.absent(),
     this.passphrase = const Value.absent(),
+    this.systemKeyPath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.lastUsed = const Value.absent(),
   })  : userId = Value(userId),
@@ -771,6 +808,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
     Expression<String>? privateKey,
     Expression<String>? publicKey,
     Expression<String>? passphrase,
+    Expression<String>? systemKeyPath,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastUsed,
   }) {
@@ -786,6 +824,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
       if (privateKey != null) 'private_key': privateKey,
       if (publicKey != null) 'public_key': publicKey,
       if (passphrase != null) 'passphrase': passphrase,
+      if (systemKeyPath != null) 'system_key_path': systemKeyPath,
       if (createdAt != null) 'created_at': createdAt,
       if (lastUsed != null) 'last_used': lastUsed,
     });
@@ -803,6 +842,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
       Value<String?>? privateKey,
       Value<String?>? publicKey,
       Value<String?>? passphrase,
+      Value<String?>? systemKeyPath,
       Value<DateTime>? createdAt,
       Value<DateTime?>? lastUsed}) {
     return ConnectionsCompanion(
@@ -817,6 +857,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
       privateKey: privateKey ?? this.privateKey,
       publicKey: publicKey ?? this.publicKey,
       passphrase: passphrase ?? this.passphrase,
+      systemKeyPath: systemKeyPath ?? this.systemKeyPath,
       createdAt: createdAt ?? this.createdAt,
       lastUsed: lastUsed ?? this.lastUsed,
     );
@@ -858,6 +899,9 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
     if (passphrase.present) {
       map['passphrase'] = Variable<String>(passphrase.value);
     }
+    if (systemKeyPath.present) {
+      map['system_key_path'] = Variable<String>(systemKeyPath.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -881,6 +925,7 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
           ..write('privateKey: $privateKey, ')
           ..write('publicKey: $publicKey, ')
           ..write('passphrase: $passphrase, ')
+          ..write('systemKeyPath: $systemKeyPath, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastUsed: $lastUsed')
           ..write(')'))
@@ -1056,6 +1101,7 @@ typedef $$ConnectionsTableCreateCompanionBuilder = ConnectionsCompanion
   Value<String?> privateKey,
   Value<String?> publicKey,
   Value<String?> passphrase,
+  Value<String?> systemKeyPath,
   Value<DateTime> createdAt,
   Value<DateTime?> lastUsed,
 });
@@ -1072,6 +1118,7 @@ typedef $$ConnectionsTableUpdateCompanionBuilder = ConnectionsCompanion
   Value<String?> privateKey,
   Value<String?> publicKey,
   Value<String?> passphrase,
+  Value<String?> systemKeyPath,
   Value<DateTime> createdAt,
   Value<DateTime?> lastUsed,
 });
@@ -1117,6 +1164,9 @@ class $$ConnectionsTableFilterComposer
 
   ColumnFilters<String> get passphrase => $composableBuilder(
       column: $table.passphrase, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get systemKeyPath => $composableBuilder(
+      column: $table.systemKeyPath, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -1167,6 +1217,10 @@ class $$ConnectionsTableOrderingComposer
   ColumnOrderings<String> get passphrase => $composableBuilder(
       column: $table.passphrase, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get systemKeyPath => $composableBuilder(
+      column: $table.systemKeyPath,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -1216,6 +1270,9 @@ class $$ConnectionsTableAnnotationComposer
   GeneratedColumn<String> get passphrase => $composableBuilder(
       column: $table.passphrase, builder: (column) => column);
 
+  GeneratedColumn<String> get systemKeyPath => $composableBuilder(
+      column: $table.systemKeyPath, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -1257,6 +1314,7 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             Value<String?> privateKey = const Value.absent(),
             Value<String?> publicKey = const Value.absent(),
             Value<String?> passphrase = const Value.absent(),
+            Value<String?> systemKeyPath = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime?> lastUsed = const Value.absent(),
           }) =>
@@ -1272,6 +1330,7 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             privateKey: privateKey,
             publicKey: publicKey,
             passphrase: passphrase,
+            systemKeyPath: systemKeyPath,
             createdAt: createdAt,
             lastUsed: lastUsed,
           ),
@@ -1287,6 +1346,7 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             Value<String?> privateKey = const Value.absent(),
             Value<String?> publicKey = const Value.absent(),
             Value<String?> passphrase = const Value.absent(),
+            Value<String?> systemKeyPath = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime?> lastUsed = const Value.absent(),
           }) =>
@@ -1302,6 +1362,7 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             privateKey: privateKey,
             publicKey: publicKey,
             passphrase: passphrase,
+            systemKeyPath: systemKeyPath,
             createdAt: createdAt,
             lastUsed: lastUsed,
           ),

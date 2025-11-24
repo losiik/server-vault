@@ -40,11 +40,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if (result.success) {
         _showSuccess(result.message);
-        // Возвращаемся на экран входа через 1 секунду
         await Future.delayed(const Duration(seconds: 1));
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => HomeScreen(userId: result.userId!)),
         );
       } else {
         _showError(result.message);

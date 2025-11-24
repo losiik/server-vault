@@ -25,10 +25,23 @@ class _AddConnectionScreenState extends State<AddConnectionScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passphraseController = TextEditingController();
+  final _keyPathController = TextEditingController();
 
   AuthType _authType = AuthType.password;
   String? _privateKeyPath;
   String? _privateKeyContent;
+
+  @override
+  void initState() {
+    super.initState();
+    // Устанавливаем путь по умолчанию для системного ключа
+    final home = Platform.environment['HOME'] ??
+        Platform.environment['USERPROFILE'] ??
+        '';
+    _keyPathController.text = Platform.isWindows
+        ? '$home\\.ssh\\id_rsa'
+        : '$home/.ssh/id_rsa';
+  }
 
   @override
   void dispose() {
@@ -38,6 +51,7 @@ class _AddConnectionScreenState extends State<AddConnectionScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     _passphraseController.dispose();
+    _keyPathController.dispose();
     super.dispose();
   }
 
@@ -60,7 +74,7 @@ class _AddConnectionScreenState extends State<AddConnectionScreen> {
 
   void _saveConnection() {
     if (_formKey.currentState!.validate()) {
-      // Проверка для типа авторизации по ключу
+      // Проверка для типа авторизации по загруженному ключу
       if (_authType == AuthType.key && _privateKeyContent == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -83,6 +97,7 @@ class _AddConnectionScreenState extends State<AddConnectionScreen> {
         passphrase: _authType == AuthType.key && _passphraseController.text.isNotEmpty
             ? _passphraseController.text
             : null,
+        systemKeyPath: _authType == AuthType.systemKey ? _keyPathController.text.trim() : null,
       );
 
       widget.onAdd(connection);
@@ -193,6 +208,7 @@ class _AddConnectionScreenState extends State<AddConnectionScreen> {
                         ),
                         RadioListTile<AuthType>(
                           title: const Text('По паролю'),
+                          subtitle: const Text('Обычная авторизация'),
                           value: AuthType.password,
                           groupValue: _authType,
                           onChanged: (value) {
@@ -200,7 +216,17 @@ class _AddConnectionScreenState extends State<AddConnectionScreen> {
                           },
                         ),
                         RadioListTile<AuthType>(
-                          title: const Text('По SSH-ключу'),
+                          title: const Text('Системный SSH-ключ'),
+                          subtitle: const Text('Использовать ~/.ssh/id_rsa'),
+                          value: AuthType.systemKey,
+                          groupValue: _authType,
+                          onChanged: (value) {
+                            setState(() => _authType = value!);
+                          },
+                        ),
+                        RadioListTile<AuthType>(
+                          title: const Text('Загрузить SSH-ключ'),
+                          subtitle: const Text('Загрузить приватный ключ'),
                           value: AuthType.key,
                           groupValue: _authType,
                           onChanged: (value) {
@@ -230,6 +256,43 @@ class _AddConnectionScreenState extends State<AddConnectionScreen> {
                       }
                       return null;
                     },
+                  ),
+                ] else if (_authType == AuthType.systemKey) ...[
+                  TextFormField(
+                    controller: _keyPathController,
+                    decoration: const InputDecoration(
+                      labelText: "Путь к приватному ключу",
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.folder),
+                      helperText: 'Обычно: ~/.ssh/id_rsa',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Введите путь к ключу';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 20, color: Colors.blue.shade700),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Используется SSH-ключ, уже настроенный в системе',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ] else ...[
                   OutlinedButton.icon(

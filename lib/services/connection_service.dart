@@ -5,17 +5,18 @@ import '../entity/connection.dart' as entity;
 class ConnectionService {
   final AppDatabase _database = AppDatabase();
 
-  /// Получить все подключения пользователя
-  Future<List> getConnections(int userId) async {
+  Future<List<entity.Connection>> getConnections(int userId) async {
     final connections = await (_database.select(_database.connections)
       ..where((tbl) => tbl.userId.equals(userId))
-      ..orderBy([(tbl) => drift.OrderingTerm.desc(tbl.lastUsed)]))
+      ..orderBy([
+            (tbl) => drift.OrderingTerm.desc(tbl.lastUsed),
+            (tbl) => drift.OrderingTerm.desc(tbl.createdAt),
+      ]))
         .get();
 
-    return connections.map(_mapToEntity as Function(Connection e)).toList();
+    return connections.map((dbConn) => _mapToEntity(dbConn)).toList();
   }
 
-  /// Добавить новое подключение
   Future<int> addConnection(entity.Connection connection) async {
     return await _database.into(_database.connections).insert(
       ConnectionsCompanion.insert(
@@ -29,32 +30,29 @@ class ConnectionService {
         privateKey: drift.Value(connection.privateKey),
         publicKey: drift.Value(connection.publicKey),
         passphrase: drift.Value(connection.passphrase),
+        systemKeyPath: drift.Value(connection.systemKeyPath),  // ⬅️ ДОБАВЛЕНО
       ),
     );
   }
 
-  /// Удалить подключение
   Future<void> deleteConnection(int connectionId) async {
     await (_database.delete(_database.connections)
       ..where((tbl) => tbl.id.equals(connectionId)))
         .go();
   }
 
-  /// Переименовать подключение
   Future<void> renameConnection(int connectionId, String newName) async {
     await (_database.update(_database.connections)
       ..where((tbl) => tbl.id.equals(connectionId)))
         .write(ConnectionsCompanion(name: drift.Value(newName)));
   }
 
-  /// Обновить время последнего использования
   Future<void> updateLastUsed(int connectionId) async {
     await (_database.update(_database.connections)
       ..where((tbl) => tbl.id.equals(connectionId)))
         .write(ConnectionsCompanion(lastUsed: drift.Value(DateTime.now())));
   }
 
-  /// Обновить подключение
   Future<void> updateConnection(entity.Connection connection) async {
     if (connection.id == null) return;
 
@@ -70,11 +68,11 @@ class ConnectionService {
       privateKey: drift.Value(connection.privateKey),
       publicKey: drift.Value(connection.publicKey),
       passphrase: drift.Value(connection.passphrase),
+      systemKeyPath: drift.Value(connection.systemKeyPath),  // ⬅️ ДОБАВЛЕНО
     ));
   }
 
-  /// Преобразование из БД в entity
-  entity.Connection _mapToEntity(entity.Connection dbConnection) {
+  entity.Connection _mapToEntity(Connection dbConnection) {
     return entity.Connection(
       id: dbConnection.id,
       userId: dbConnection.userId,
@@ -82,11 +80,12 @@ class ConnectionService {
       host: dbConnection.host,
       port: dbConnection.port,
       username: dbConnection.username,
-      authType: entity.AuthType.fromString(dbConnection.authType as String),
+      authType: entity.AuthType.fromString(dbConnection.authType),
       password: dbConnection.password,
       privateKey: dbConnection.privateKey,
       publicKey: dbConnection.publicKey,
       passphrase: dbConnection.passphrase,
+      systemKeyPath: dbConnection.systemKeyPath,  // ⬅️ ДОБАВЛЕНО
       createdAt: dbConnection.createdAt,
       lastUsed: dbConnection.lastUsed,
     );

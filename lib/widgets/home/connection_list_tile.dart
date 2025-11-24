@@ -23,7 +23,9 @@ class ConnectionListTile extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: Colors.blue.shade100,
           child: Icon(
-            Icons.computer,
+            connection.authType == AuthType.password
+                ? Icons.password
+                : Icons.vpn_key,
             color: Colors.blue.shade700,
           ),
         ),
@@ -44,10 +46,44 @@ class ConnectionListTile extends StatelessWidget {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    '${connection.host}:${connection.port}',
+                    '${connection.username}@${connection.host}:${connection.port}',
                     style: const TextStyle(fontSize: 14),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(
+                  connection.authType == AuthType.password
+                      ? Icons.lock
+                      : Icons.key,
+                  size: 12,
+                  color: Colors.grey,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  connection.authType == AuthType.password
+                      ? 'Пароль'
+                      : 'SSH-ключ',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                if (connection.lastUsed != null) ...[
+                  const SizedBox(width: 12),
+                  Icon(Icons.access_time, size: 12, color: Colors.grey.shade400),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatLastUsed(connection.lastUsed!),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
               ],
             ),
           ],
@@ -84,5 +120,22 @@ class ConnectionListTile extends StatelessWidget {
         onTap: onTap,
       ),
     );
+  }
+
+  String _formatLastUsed(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return 'только что';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} мин назад';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} ч назад';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} д назад';
+    } else {
+      return '${dateTime.day}.${dateTime.month}.${dateTime.year}';
+    }
   }
 }

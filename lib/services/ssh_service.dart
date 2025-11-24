@@ -1,5 +1,7 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:dartssh2/dartssh2.dart';
+import 'package:path/path.dart' as path;
 import '../entity/connection.dart';
 
 class SSHService {
@@ -17,14 +19,14 @@ class SSHService {
       );
 
       if (connection.authType == AuthType.password) {
-        // Подключение по паролю
+        // Авторизация по паролю
         _client = SSHClient(
           socket,
           username: connection.username,
           onPasswordRequest: () => connection.password ?? '',
         );
-      } else {
-        // Подключение по ключу
+      } else if (connection.authType == AuthType.key) {
+        // Авторизация по загруженному ключу
         if (connection.privateKey == null) {
           throw Exception('Private key is required');
         }
@@ -36,12 +38,43 @@ class SSHService {
             ...SSHKeyPair.fromPem(connection.privateKey!),
           ],
         );
+      } else if (connection.authType == AuthType.systemKey) {
+        // Авторизация по системному ключу
+        final keyPath = connection.systemKeyPath ?? _getDefaultKeyPath();
+        final keyFile = File(keyPath);
+
+        if (!await keyFile.exists()) {
+          throw Exception('SSH ключ не найден: $keyPath');
+        }
+
+        final privateKeyContent = await keyFile.readAsString();
+
+        _client = SSHClient(
+          socket,
+          username: connection.username,
+          identities: [
+            ...SSHKeyPair.fromPem(privateKeyContent),
+          ],
+        );
       }
 
       return true;
     } catch (e) {
       print('SSH connection error: $e');
       return false;
+    }
+  }
+
+  /// Получить путь к ключу по умолчанию
+  String _getDefaultKeyPath() {
+    final home = Platform.environment['HOME'] ??
+        Platform.environment['USERPROFILE'] ??
+        '';
+
+    if (Platform.isWindows) {
+      return path.join(home, '.ssh', 'id_rsa');
+    } else {
+      return path.join(home, '.ssh', 'id_rsa');
     }
   }
 

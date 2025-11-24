@@ -1,5 +1,5 @@
 class Connection {
-  final int? id;  // Теперь может быть null для новых подключений
+  final int? id;
   final int userId;
   final String name;
   final String host;
@@ -10,10 +10,13 @@ class Connection {
   // Для авторизации по паролю
   final String? password;
 
-  // Для авторизации по ключу
+  // Для авторизации по ключу (загруженному)
   final String? privateKey;
   final String? publicKey;
   final String? passphrase;
+
+  // Для системного ключа
+  final String? systemKeyPath;
 
   final DateTime? createdAt;
   final DateTime? lastUsed;
@@ -30,6 +33,7 @@ class Connection {
     this.privateKey,
     this.publicKey,
     this.passphrase,
+    this.systemKeyPath,
     this.createdAt,
     this.lastUsed,
   });
@@ -46,6 +50,7 @@ class Connection {
     String? privateKey,
     String? publicKey,
     String? passphrase,
+    String? systemKeyPath,
     DateTime? createdAt,
     DateTime? lastUsed,
   }) {
@@ -61,6 +66,7 @@ class Connection {
       privateKey: privateKey ?? this.privateKey,
       publicKey: publicKey ?? this.publicKey,
       passphrase: passphrase ?? this.passphrase,
+      systemKeyPath: systemKeyPath ?? this.systemKeyPath,
       createdAt: createdAt ?? this.createdAt,
       lastUsed: lastUsed ?? this.lastUsed,
     );
@@ -79,6 +85,7 @@ class Connection {
       'privateKey': privateKey,
       'publicKey': publicKey,
       'passphrase': passphrase,
+      'systemKeyPath': systemKeyPath,
       'createdAt': createdAt?.toIso8601String(),
       'lastUsed': lastUsed?.toIso8601String(),
     };
@@ -91,8 +98,9 @@ class Connection {
 }
 
 enum AuthType {
-  password,
-  key;
+  password,      // Авторизация по паролю
+  key,          // Авторизация по загруженному ключу
+  systemKey;    // ⬅️ НОВОЕ: Авторизация по системному ключу
 
   @override
   String toString() => name;

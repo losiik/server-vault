@@ -46,8 +46,8 @@ class AuthService {
       // Хешируем пароль для безопасного хранения
       final hashedPassword = _hashPassword(password);
 
-      // Создаем нового пользователя
-      await _database.into(_database.users).insert(
+      // Создаем нового пользователя и получаем его ID
+      final userId = await _database.into(_database.users).insert(
         UsersCompanion.insert(
           login: login.trim(),
           password: hashedPassword,
@@ -58,6 +58,7 @@ class AuthService {
       return AuthResult(
         success: true,
         message: 'Регистрация успешна!',
+        userId: userId,
       );
     } catch (e) {
       return AuthResult(
