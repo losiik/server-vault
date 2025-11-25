@@ -48,7 +48,7 @@ class EncryptionService {
 
     try {
       final key = await _getMasterKey();
-      final iv = IV.fromSecureRandom(16); // 128-bit IV для GCM
+      final iv = IV.fromSecureRandom(16);
 
       final encrypter = Encrypter(AES(key, mode: AESMode.gcm));
       final encrypted = encrypter.encrypt(password, iv: iv);

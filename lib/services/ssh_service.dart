@@ -3,21 +3,24 @@ import 'dart:io';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:path/path.dart' as path;
 import '../entity/connection.dart';
+import 'logger_service.dart';
 
 class SSHService {
   SSHClient? _client;
   SSHSession? _shell;
+  final _logger = LoggerService();
 
   bool get isConnected => _client != null;
 
   Future<bool> connect(Connection connection) async {
-    try {
-      print('🔌 Подключение SSH:');
-      print('   Тип: ${connection.type}');
-      print('   Host: ${connection.effectiveHost}');
-      print('   Port: ${connection.effectivePort}');
-      print('   Username: ${connection.effectiveUsername}');
+    _logger.logSSH(
+      'попытка подключения',
+      host: connection.effectiveHost,
+      port: connection.effectivePort,
+      username: connection.effectiveUsername,
+    );
 
+    try {
       final socket = await SSHSocket.connect(
         connection.effectiveHost,
         connection.effectivePort,
@@ -25,21 +28,21 @@ class SSHService {
       );
 
       if (connection.type == ConnectionType.password) {
-        print('🔐 Авторизация по паролю...');
+        _logger.debug('🔐 Авторизация по паролю');
         _client = SSHClient(
           socket,
           username: connection.effectiveUsername,
           onPasswordRequest: () => connection.password ?? '',
         );
       } else {
-        print('🔑 Авторизация по системным ключам...');
+        _logger.debug('🔑 Авторизация по системным ключам');
         final keyPairs = await _loadSystemKeys();
 
         if (keyPairs.isEmpty) {
           throw Exception('Не найдено ни одного SSH-ключа в ~/.ssh/');
         }
 
-        print('   Найдено ключей: ${keyPairs.length}');
+        _logger.info('🔑 Найдено ключей: ${keyPairs.length}');
 
         _client = SSHClient(
           socket,
@@ -49,10 +52,22 @@ class SSHService {
         );
       }
 
-      print('✓ Подключение установлено');
+      _logger.logSSH(
+        'подключение установлено',
+        host: connection.effectiveHost,
+        port: connection.effectivePort,
+        username: connection.effectiveUsername,
+      );
       return true;
-    } catch (e) {
-      print('✗ SSH connection error: $e');
+    } catch (e, stackTrace) {
+      _logger.logSSH(
+        'ошибка подключения',
+        host: connection.effectiveHost,
+        port: connection.effectivePort,
+        username: connection.effectiveUsername,
+        error: e.toString(),
+      );
+      _logger.error('SSH connection error', e, stackTrace);
       return false;
     }
   }
@@ -75,10 +90,10 @@ class SSHService {
         if (await file.exists()) {
           final content = await file.readAsString();
           keys.addAll(SSHKeyPair.fromPem(content));
-          print('✓ Загружен ключ: $keyPath');
+          _logger.info('✅ Загружен ключ: $keyPath');
         }
       } catch (e) {
-        print('✗ Не удалось загрузить ключ $keyPath: $e');
+        _logger.warning('⚠️ Не удалось загрузить ключ $keyPath', e);
       }
     }
 
@@ -95,9 +110,10 @@ class SSHService {
           height: 25,
         ),
       );
+      _logger.info('🖥️ SSH shell открыт');
       return _shell;
-    } catch (e) {
-      print('Shell open error: $e');
+    } catch (e, stackTrace) {
+      _logger.error('Shell open error', e, stackTrace);
       return null;
     }
   }
@@ -115,5 +131,6 @@ class SSHService {
     _client?.close();
     _shell = null;
     _client = null;
+    _logger.info('🔌 SSH отключен');
   }
 }
