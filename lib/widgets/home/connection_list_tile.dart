@@ -21,12 +21,16 @@ class ConnectionListTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blue.shade100,
+          backgroundColor: connection.type == ConnectionType.password
+              ? Colors.blue.shade100
+              : Colors.green.shade100,
           child: Icon(
-            connection.authType == AuthType.password
+            connection.type == ConnectionType.password
                 ? Icons.password
-                : Icons.vpn_key,
-            color: Colors.blue.shade700,
+                : Icons.terminal,
+            color: connection.type == ConnectionType.password
+                ? Colors.blue.shade700
+                : Colors.green.shade700,
           ),
         ),
         title: Text(
@@ -40,52 +44,53 @@ class ConnectionListTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.dns, size: 14, color: Colors.grey),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    '${connection.username}@${connection.host}:${connection.port}',
-                    style: const TextStyle(fontSize: 14),
-                  ),
+            if (connection.type == ConnectionType.command) ...[
+              Text(
+                connection.sshCommand ?? '',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'monospace',
                 ),
-              ],
-            ),
-            const SizedBox(height: 2),
+              ),
+              const SizedBox(height: 4),
+            ],
             Row(
               children: [
                 Icon(
-                  connection.authType == AuthType.password
+                  connection.type == ConnectionType.password
                       ? Icons.lock
                       : Icons.key,
                   size: 12,
                   color: Colors.grey,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  connection.authType == AuthType.password
-                      ? 'Пароль'
-                      : 'SSH-ключ',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                if (connection.lastUsed != null) ...[
-                  const SizedBox(width: 12),
-                  Icon(Icons.access_time, size: 12, color: Colors.grey.shade400),
-                  const SizedBox(width: 4),
-                  Text(
-                    _formatLastUsed(connection.lastUsed!),
+                Expanded(
+                  child: Text(
+                    '${connection.effectiveUsername}@${connection.effectiveHost}:${connection.effectivePort}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
                     ),
                   ),
-                ],
+                ),
               ],
             ),
+            if (connection.lastUsed != null) ...[
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Icon(Icons.access_time, size: 12, color: Colors.grey.shade400),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatLastUsed(connection.lastUsed!),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
         trailing: PopupMenuButton<String>(

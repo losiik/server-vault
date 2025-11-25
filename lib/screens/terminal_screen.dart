@@ -36,33 +36,28 @@ class _TerminalScreenState extends State<TerminalScreen> {
       _errorMessage = null;
     });
 
-    _terminal.write('Подключение к ${widget.connection.host}...\r\n');
+    _terminal.write('Подключение к ${widget.connection.effectiveHost}...\r\n');
 
-    if (widget.connection.authType == AuthType.password) {
+    if (widget.connection.type == ConnectionType.password) {
       _terminal.write('Авторизация по паролю...\r\n');
-    } else if (widget.connection.authType == AuthType.systemKey) {
-      _terminal.write('Авторизация по системному SSH-ключу...\r\n');
-      _terminal.write('Ключ: ${widget.connection.systemKeyPath ?? "~/.ssh/id_rsa"}\r\n');
     } else {
-      _terminal.write('Авторизация по загруженному SSH-ключу...\r\n');
+      _terminal.write('Авторизация по SSH команде...\r\n');
+      _terminal.write('Команда: ${widget.connection.sshCommand}\r\n');
     }
 
     try {
-      // Подключаемся к SSH
       final connected = await _sshService.connect(widget.connection);
 
       if (!connected) {
         throw Exception('Не удалось подключиться');
       }
 
-      // Открываем shell
       final shell = await _sshService.openShell();
 
       if (shell == null) {
         throw Exception('Не удалось открыть терминал');
       }
 
-      // Подключаем вывод SSH к терминалу
       shell.stdout.listen((data) {
         if (mounted) {
           _terminal.write(utf8.decode(data));
@@ -75,12 +70,10 @@ class _TerminalScreenState extends State<TerminalScreen> {
         }
       });
 
-      // Подключаем ввод терминала к SSH
       _terminal.onOutput = (data) {
         _sshService.write(data);
       };
 
-      // Обработка изменения размера терминала
       _terminal.onResize = (width, height, pixelWidth, pixelHeight) {
         _sshService.resizeTerminal(width, height);
       };
@@ -93,8 +86,8 @@ class _TerminalScreenState extends State<TerminalScreen> {
       _terminal.write('✓ Подключено успешно!\r\n');
       _terminal.write('─────────────────────────────────────\r\n');
       _terminal.write('Подключение: ${widget.connection.name}\r\n');
-      _terminal.write('Сервер: ${widget.connection.username}@${widget.connection.host}:${widget.connection.port}\r\n');
-      _terminal.write('Тип авторизации: ${widget.connection.authType == AuthType.password ? "Пароль" : "SSH-ключ"}\r\n');
+      _terminal.write('Сервер: ${widget.connection.effectiveUsername}@${widget.connection.effectiveHost}:${widget.connection.effectivePort}\r\n');
+      _terminal.write('Тип: ${widget.connection.type == ConnectionType.password ? "Пароль" : "SSH команда"}\r\n');
       _terminal.write('─────────────────────────────────────\r\n\r\n');
     } catch (e) {
       setState(() {
@@ -105,11 +98,11 @@ class _TerminalScreenState extends State<TerminalScreen> {
 
       _terminal.write('✗ Ошибка подключения: $e\r\n');
 
-      if (widget.connection.authType == AuthType.key) {
+      if (widget.connection.type == ConnectionType.command) {
         _terminal.write('\r\nПроверьте:\r\n');
-        _terminal.write('- Корректность приватного ключа\r\n');
-        _terminal.write('- Правильность passphrase (если есть)\r\n');
-        _terminal.write('- Наличие публичного ключа на сервере\r\n');
+        _terminal.write('- Корректность SSH команды\r\n');
+        _terminal.write('- Наличие ключей в ~/.ssh/\r\n');
+        _terminal.write('- Права доступа к ключам\r\n');
       }
     }
   }
@@ -159,30 +152,23 @@ class _TerminalScreenState extends State<TerminalScreen> {
           children: [
             Text(widget.connection.name),
             Text(
-              '${widget.connection.username}@${widget.connection.host}',
+              '${widget.connection.effectiveUsername}@${widget.connection.effectiveHost}',
               style: const TextStyle(fontSize: 12),
             ),
           ],
         ),
         actions: [
-          // Индикатор типа подключения
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Chip(
               avatar: Icon(
-                widget.connection.authType == AuthType.password
+                widget.connection.type == ConnectionType.password
                     ? Icons.password
-                    : widget.connection.authType == AuthType.systemKey
-                    ? Icons.computer
-                    : Icons.vpn_key,
+                    : Icons.terminal,
                 size: 16,
               ),
               label: Text(
-                widget.connection.authType == AuthType.password
-                    ? 'PWD'
-                    : widget.connection.authType == AuthType.systemKey
-                    ? 'SYS'
-                    : 'KEY',
+                widget.connection.type == ConnectionType.password ? 'PWD' : 'CMD',
                 style: const TextStyle(fontSize: 11),
               ),
               visualDensity: VisualDensity.compact,
@@ -214,7 +200,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
           const Text('Подключение...'),
           const SizedBox(height: 8),
           Text(
-            '${widget.connection.username}@${widget.connection.host}:${widget.connection.port}',
+            '${widget.connection.effectiveUsername}@${widget.connection.effectiveHost}:${widget.connection.effectivePort}',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -233,9 +219,9 @@ class _TerminalScreenState extends State<TerminalScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              widget.connection.authType == AuthType.password
+              widget.connection.type == ConnectionType.password
                   ? Icons.lock_outline
-                  : Icons.key_off,
+                  : Icons.terminal,
               size: 64,
               color: Colors.red,
             ),
@@ -250,7 +236,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.grey),
             ),
-            if (widget.connection.authType == AuthType.key) ...[
+            if (widget.connection.type == ConnectionType.command) ...[
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -267,7 +253,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
                         Icon(Icons.info_outline, size: 20, color: Colors.orange.shade700),
                         const SizedBox(width: 8),
                         Text(
-                          'Проверьте SSH-ключ',
+                          'Проверьте SSH-ключи',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.orange.shade700,
@@ -277,9 +263,9 @@ class _TerminalScreenState extends State<TerminalScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      '• Приватный ключ должен быть в формате PEM\n'
-                          '• Публичный ключ должен быть на сервере\n'
-                          '• Проверьте правильность passphrase',
+                      '• Ключи должны находиться в ~/.ssh/\n'
+                          '• Проверьте права доступа (chmod 600)\n'
+                          '• Публичный ключ должен быть на сервере',
                       style: TextStyle(fontSize: 12),
                     ),
                   ],

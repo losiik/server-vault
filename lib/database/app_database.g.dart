@@ -288,61 +288,40 @@ class $ConnectionsTable extends Connections
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('password'));
+  static const VerificationMeta _sshCommandMeta =
+      const VerificationMeta('sshCommand');
+  @override
+  late final GeneratedColumn<String> sshCommand = GeneratedColumn<String>(
+      'ssh_command', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _hostMeta = const VerificationMeta('host');
   @override
   late final GeneratedColumn<String> host = GeneratedColumn<String>(
-      'host', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'host', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _portMeta = const VerificationMeta('port');
   @override
   late final GeneratedColumn<int> port = GeneratedColumn<int>(
-      'port', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(22));
+      'port', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _usernameMeta =
       const VerificationMeta('username');
   @override
   late final GeneratedColumn<String> username = GeneratedColumn<String>(
-      'username', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _authTypeMeta =
-      const VerificationMeta('authType');
-  @override
-  late final GeneratedColumn<String> authType = GeneratedColumn<String>(
-      'auth_type', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('password'));
+      'username', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _passwordMeta =
       const VerificationMeta('password');
   @override
   late final GeneratedColumn<String> password = GeneratedColumn<String>(
       'password', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _privateKeyMeta =
-      const VerificationMeta('privateKey');
-  @override
-  late final GeneratedColumn<String> privateKey = GeneratedColumn<String>(
-      'private_key', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _publicKeyMeta =
-      const VerificationMeta('publicKey');
-  @override
-  late final GeneratedColumn<String> publicKey = GeneratedColumn<String>(
-      'public_key', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _passphraseMeta =
-      const VerificationMeta('passphrase');
-  @override
-  late final GeneratedColumn<String> passphrase = GeneratedColumn<String>(
-      'passphrase', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _systemKeyPathMeta =
-      const VerificationMeta('systemKeyPath');
-  @override
-  late final GeneratedColumn<String> systemKeyPath = GeneratedColumn<String>(
-      'system_key_path', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
@@ -363,15 +342,12 @@ class $ConnectionsTable extends Connections
         id,
         userId,
         name,
+        type,
+        sshCommand,
         host,
         port,
         username,
-        authType,
         password,
-        privateKey,
-        publicKey,
-        passphrase,
-        systemKeyPath,
         createdAt,
         lastUsed
       ];
@@ -400,11 +376,19 @@ class $ConnectionsTable extends Connections
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    }
+    if (data.containsKey('ssh_command')) {
+      context.handle(
+          _sshCommandMeta,
+          sshCommand.isAcceptableOrUnknown(
+              data['ssh_command']!, _sshCommandMeta));
+    }
     if (data.containsKey('host')) {
       context.handle(
           _hostMeta, host.isAcceptableOrUnknown(data['host']!, _hostMeta));
-    } else if (isInserting) {
-      context.missing(_hostMeta);
     }
     if (data.containsKey('port')) {
       context.handle(
@@ -413,38 +397,10 @@ class $ConnectionsTable extends Connections
     if (data.containsKey('username')) {
       context.handle(_usernameMeta,
           username.isAcceptableOrUnknown(data['username']!, _usernameMeta));
-    } else if (isInserting) {
-      context.missing(_usernameMeta);
-    }
-    if (data.containsKey('auth_type')) {
-      context.handle(_authTypeMeta,
-          authType.isAcceptableOrUnknown(data['auth_type']!, _authTypeMeta));
     }
     if (data.containsKey('password')) {
       context.handle(_passwordMeta,
           password.isAcceptableOrUnknown(data['password']!, _passwordMeta));
-    }
-    if (data.containsKey('private_key')) {
-      context.handle(
-          _privateKeyMeta,
-          privateKey.isAcceptableOrUnknown(
-              data['private_key']!, _privateKeyMeta));
-    }
-    if (data.containsKey('public_key')) {
-      context.handle(_publicKeyMeta,
-          publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta));
-    }
-    if (data.containsKey('passphrase')) {
-      context.handle(
-          _passphraseMeta,
-          passphrase.isAcceptableOrUnknown(
-              data['passphrase']!, _passphraseMeta));
-    }
-    if (data.containsKey('system_key_path')) {
-      context.handle(
-          _systemKeyPathMeta,
-          systemKeyPath.isAcceptableOrUnknown(
-              data['system_key_path']!, _systemKeyPathMeta));
     }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
@@ -469,24 +425,18 @@ class $ConnectionsTable extends Connections
           .read(DriftSqlType.int, data['${effectivePrefix}user_id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
+      sshCommand: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}ssh_command']),
       host: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}host'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}host']),
       port: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}port'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}port']),
       username: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}username'])!,
-      authType: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}auth_type'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}username']),
       password: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}password']),
-      privateKey: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}private_key']),
-      publicKey: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}public_key']),
-      passphrase: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}passphrase']),
-      systemKeyPath: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}system_key_path']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       lastUsed: attachedDatabase.typeMapping
@@ -504,30 +454,24 @@ class Connection extends DataClass implements Insertable<Connection> {
   final int id;
   final int userId;
   final String name;
-  final String host;
-  final int port;
-  final String username;
-  final String authType;
+  final String type;
+  final String? sshCommand;
+  final String? host;
+  final int? port;
+  final String? username;
   final String? password;
-  final String? privateKey;
-  final String? publicKey;
-  final String? passphrase;
-  final String? systemKeyPath;
   final DateTime createdAt;
   final DateTime? lastUsed;
   const Connection(
       {required this.id,
       required this.userId,
       required this.name,
-      required this.host,
-      required this.port,
-      required this.username,
-      required this.authType,
+      required this.type,
+      this.sshCommand,
+      this.host,
+      this.port,
+      this.username,
       this.password,
-      this.privateKey,
-      this.publicKey,
-      this.passphrase,
-      this.systemKeyPath,
       required this.createdAt,
       this.lastUsed});
   @override
@@ -536,24 +480,21 @@ class Connection extends DataClass implements Insertable<Connection> {
     map['id'] = Variable<int>(id);
     map['user_id'] = Variable<int>(userId);
     map['name'] = Variable<String>(name);
-    map['host'] = Variable<String>(host);
-    map['port'] = Variable<int>(port);
-    map['username'] = Variable<String>(username);
-    map['auth_type'] = Variable<String>(authType);
+    map['type'] = Variable<String>(type);
+    if (!nullToAbsent || sshCommand != null) {
+      map['ssh_command'] = Variable<String>(sshCommand);
+    }
+    if (!nullToAbsent || host != null) {
+      map['host'] = Variable<String>(host);
+    }
+    if (!nullToAbsent || port != null) {
+      map['port'] = Variable<int>(port);
+    }
+    if (!nullToAbsent || username != null) {
+      map['username'] = Variable<String>(username);
+    }
     if (!nullToAbsent || password != null) {
       map['password'] = Variable<String>(password);
-    }
-    if (!nullToAbsent || privateKey != null) {
-      map['private_key'] = Variable<String>(privateKey);
-    }
-    if (!nullToAbsent || publicKey != null) {
-      map['public_key'] = Variable<String>(publicKey);
-    }
-    if (!nullToAbsent || passphrase != null) {
-      map['passphrase'] = Variable<String>(passphrase);
-    }
-    if (!nullToAbsent || systemKeyPath != null) {
-      map['system_key_path'] = Variable<String>(systemKeyPath);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || lastUsed != null) {
@@ -567,25 +508,18 @@ class Connection extends DataClass implements Insertable<Connection> {
       id: Value(id),
       userId: Value(userId),
       name: Value(name),
-      host: Value(host),
-      port: Value(port),
-      username: Value(username),
-      authType: Value(authType),
+      type: Value(type),
+      sshCommand: sshCommand == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sshCommand),
+      host: host == null && nullToAbsent ? const Value.absent() : Value(host),
+      port: port == null && nullToAbsent ? const Value.absent() : Value(port),
+      username: username == null && nullToAbsent
+          ? const Value.absent()
+          : Value(username),
       password: password == null && nullToAbsent
           ? const Value.absent()
           : Value(password),
-      privateKey: privateKey == null && nullToAbsent
-          ? const Value.absent()
-          : Value(privateKey),
-      publicKey: publicKey == null && nullToAbsent
-          ? const Value.absent()
-          : Value(publicKey),
-      passphrase: passphrase == null && nullToAbsent
-          ? const Value.absent()
-          : Value(passphrase),
-      systemKeyPath: systemKeyPath == null && nullToAbsent
-          ? const Value.absent()
-          : Value(systemKeyPath),
       createdAt: Value(createdAt),
       lastUsed: lastUsed == null && nullToAbsent
           ? const Value.absent()
@@ -600,15 +534,12 @@ class Connection extends DataClass implements Insertable<Connection> {
       id: serializer.fromJson<int>(json['id']),
       userId: serializer.fromJson<int>(json['userId']),
       name: serializer.fromJson<String>(json['name']),
-      host: serializer.fromJson<String>(json['host']),
-      port: serializer.fromJson<int>(json['port']),
-      username: serializer.fromJson<String>(json['username']),
-      authType: serializer.fromJson<String>(json['authType']),
+      type: serializer.fromJson<String>(json['type']),
+      sshCommand: serializer.fromJson<String?>(json['sshCommand']),
+      host: serializer.fromJson<String?>(json['host']),
+      port: serializer.fromJson<int?>(json['port']),
+      username: serializer.fromJson<String?>(json['username']),
       password: serializer.fromJson<String?>(json['password']),
-      privateKey: serializer.fromJson<String?>(json['privateKey']),
-      publicKey: serializer.fromJson<String?>(json['publicKey']),
-      passphrase: serializer.fromJson<String?>(json['passphrase']),
-      systemKeyPath: serializer.fromJson<String?>(json['systemKeyPath']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       lastUsed: serializer.fromJson<DateTime?>(json['lastUsed']),
     );
@@ -620,15 +551,12 @@ class Connection extends DataClass implements Insertable<Connection> {
       'id': serializer.toJson<int>(id),
       'userId': serializer.toJson<int>(userId),
       'name': serializer.toJson<String>(name),
-      'host': serializer.toJson<String>(host),
-      'port': serializer.toJson<int>(port),
-      'username': serializer.toJson<String>(username),
-      'authType': serializer.toJson<String>(authType),
+      'type': serializer.toJson<String>(type),
+      'sshCommand': serializer.toJson<String?>(sshCommand),
+      'host': serializer.toJson<String?>(host),
+      'port': serializer.toJson<int?>(port),
+      'username': serializer.toJson<String?>(username),
       'password': serializer.toJson<String?>(password),
-      'privateKey': serializer.toJson<String?>(privateKey),
-      'publicKey': serializer.toJson<String?>(publicKey),
-      'passphrase': serializer.toJson<String?>(passphrase),
-      'systemKeyPath': serializer.toJson<String?>(systemKeyPath),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'lastUsed': serializer.toJson<DateTime?>(lastUsed),
     };
@@ -638,31 +566,24 @@ class Connection extends DataClass implements Insertable<Connection> {
           {int? id,
           int? userId,
           String? name,
-          String? host,
-          int? port,
-          String? username,
-          String? authType,
+          String? type,
+          Value<String?> sshCommand = const Value.absent(),
+          Value<String?> host = const Value.absent(),
+          Value<int?> port = const Value.absent(),
+          Value<String?> username = const Value.absent(),
           Value<String?> password = const Value.absent(),
-          Value<String?> privateKey = const Value.absent(),
-          Value<String?> publicKey = const Value.absent(),
-          Value<String?> passphrase = const Value.absent(),
-          Value<String?> systemKeyPath = const Value.absent(),
           DateTime? createdAt,
           Value<DateTime?> lastUsed = const Value.absent()}) =>
       Connection(
         id: id ?? this.id,
         userId: userId ?? this.userId,
         name: name ?? this.name,
-        host: host ?? this.host,
-        port: port ?? this.port,
-        username: username ?? this.username,
-        authType: authType ?? this.authType,
+        type: type ?? this.type,
+        sshCommand: sshCommand.present ? sshCommand.value : this.sshCommand,
+        host: host.present ? host.value : this.host,
+        port: port.present ? port.value : this.port,
+        username: username.present ? username.value : this.username,
         password: password.present ? password.value : this.password,
-        privateKey: privateKey.present ? privateKey.value : this.privateKey,
-        publicKey: publicKey.present ? publicKey.value : this.publicKey,
-        passphrase: passphrase.present ? passphrase.value : this.passphrase,
-        systemKeyPath:
-            systemKeyPath.present ? systemKeyPath.value : this.systemKeyPath,
         createdAt: createdAt ?? this.createdAt,
         lastUsed: lastUsed.present ? lastUsed.value : this.lastUsed,
       );
@@ -671,19 +592,13 @@ class Connection extends DataClass implements Insertable<Connection> {
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
       name: data.name.present ? data.name.value : this.name,
+      type: data.type.present ? data.type.value : this.type,
+      sshCommand:
+          data.sshCommand.present ? data.sshCommand.value : this.sshCommand,
       host: data.host.present ? data.host.value : this.host,
       port: data.port.present ? data.port.value : this.port,
       username: data.username.present ? data.username.value : this.username,
-      authType: data.authType.present ? data.authType.value : this.authType,
       password: data.password.present ? data.password.value : this.password,
-      privateKey:
-          data.privateKey.present ? data.privateKey.value : this.privateKey,
-      publicKey: data.publicKey.present ? data.publicKey.value : this.publicKey,
-      passphrase:
-          data.passphrase.present ? data.passphrase.value : this.passphrase,
-      systemKeyPath: data.systemKeyPath.present
-          ? data.systemKeyPath.value
-          : this.systemKeyPath,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       lastUsed: data.lastUsed.present ? data.lastUsed.value : this.lastUsed,
     );
@@ -695,15 +610,12 @@ class Connection extends DataClass implements Insertable<Connection> {
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('name: $name, ')
+          ..write('type: $type, ')
+          ..write('sshCommand: $sshCommand, ')
           ..write('host: $host, ')
           ..write('port: $port, ')
           ..write('username: $username, ')
-          ..write('authType: $authType, ')
           ..write('password: $password, ')
-          ..write('privateKey: $privateKey, ')
-          ..write('publicKey: $publicKey, ')
-          ..write('passphrase: $passphrase, ')
-          ..write('systemKeyPath: $systemKeyPath, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastUsed: $lastUsed')
           ..write(')'))
@@ -711,21 +623,8 @@ class Connection extends DataClass implements Insertable<Connection> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id,
-      userId,
-      name,
-      host,
-      port,
-      username,
-      authType,
-      password,
-      privateKey,
-      publicKey,
-      passphrase,
-      systemKeyPath,
-      createdAt,
-      lastUsed);
+  int get hashCode => Object.hash(id, userId, name, type, sshCommand, host,
+      port, username, password, createdAt, lastUsed);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -733,15 +632,12 @@ class Connection extends DataClass implements Insertable<Connection> {
           other.id == this.id &&
           other.userId == this.userId &&
           other.name == this.name &&
+          other.type == this.type &&
+          other.sshCommand == this.sshCommand &&
           other.host == this.host &&
           other.port == this.port &&
           other.username == this.username &&
-          other.authType == this.authType &&
           other.password == this.password &&
-          other.privateKey == this.privateKey &&
-          other.publicKey == this.publicKey &&
-          other.passphrase == this.passphrase &&
-          other.systemKeyPath == this.systemKeyPath &&
           other.createdAt == this.createdAt &&
           other.lastUsed == this.lastUsed);
 }
@@ -750,30 +646,24 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
   final Value<int> id;
   final Value<int> userId;
   final Value<String> name;
-  final Value<String> host;
-  final Value<int> port;
-  final Value<String> username;
-  final Value<String> authType;
+  final Value<String> type;
+  final Value<String?> sshCommand;
+  final Value<String?> host;
+  final Value<int?> port;
+  final Value<String?> username;
   final Value<String?> password;
-  final Value<String?> privateKey;
-  final Value<String?> publicKey;
-  final Value<String?> passphrase;
-  final Value<String?> systemKeyPath;
   final Value<DateTime> createdAt;
   final Value<DateTime?> lastUsed;
   const ConnectionsCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
     this.name = const Value.absent(),
+    this.type = const Value.absent(),
+    this.sshCommand = const Value.absent(),
     this.host = const Value.absent(),
     this.port = const Value.absent(),
     this.username = const Value.absent(),
-    this.authType = const Value.absent(),
     this.password = const Value.absent(),
-    this.privateKey = const Value.absent(),
-    this.publicKey = const Value.absent(),
-    this.passphrase = const Value.absent(),
-    this.systemKeyPath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.lastUsed = const Value.absent(),
   });
@@ -781,34 +671,26 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
     this.id = const Value.absent(),
     required int userId,
     required String name,
-    required String host,
+    this.type = const Value.absent(),
+    this.sshCommand = const Value.absent(),
+    this.host = const Value.absent(),
     this.port = const Value.absent(),
-    required String username,
-    this.authType = const Value.absent(),
+    this.username = const Value.absent(),
     this.password = const Value.absent(),
-    this.privateKey = const Value.absent(),
-    this.publicKey = const Value.absent(),
-    this.passphrase = const Value.absent(),
-    this.systemKeyPath = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.lastUsed = const Value.absent(),
   })  : userId = Value(userId),
-        name = Value(name),
-        host = Value(host),
-        username = Value(username);
+        name = Value(name);
   static Insertable<Connection> custom({
     Expression<int>? id,
     Expression<int>? userId,
     Expression<String>? name,
+    Expression<String>? type,
+    Expression<String>? sshCommand,
     Expression<String>? host,
     Expression<int>? port,
     Expression<String>? username,
-    Expression<String>? authType,
     Expression<String>? password,
-    Expression<String>? privateKey,
-    Expression<String>? publicKey,
-    Expression<String>? passphrase,
-    Expression<String>? systemKeyPath,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastUsed,
   }) {
@@ -816,15 +698,12 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
       if (name != null) 'name': name,
+      if (type != null) 'type': type,
+      if (sshCommand != null) 'ssh_command': sshCommand,
       if (host != null) 'host': host,
       if (port != null) 'port': port,
       if (username != null) 'username': username,
-      if (authType != null) 'auth_type': authType,
       if (password != null) 'password': password,
-      if (privateKey != null) 'private_key': privateKey,
-      if (publicKey != null) 'public_key': publicKey,
-      if (passphrase != null) 'passphrase': passphrase,
-      if (systemKeyPath != null) 'system_key_path': systemKeyPath,
       if (createdAt != null) 'created_at': createdAt,
       if (lastUsed != null) 'last_used': lastUsed,
     });
@@ -834,30 +713,24 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
       {Value<int>? id,
       Value<int>? userId,
       Value<String>? name,
-      Value<String>? host,
-      Value<int>? port,
-      Value<String>? username,
-      Value<String>? authType,
+      Value<String>? type,
+      Value<String?>? sshCommand,
+      Value<String?>? host,
+      Value<int?>? port,
+      Value<String?>? username,
       Value<String?>? password,
-      Value<String?>? privateKey,
-      Value<String?>? publicKey,
-      Value<String?>? passphrase,
-      Value<String?>? systemKeyPath,
       Value<DateTime>? createdAt,
       Value<DateTime?>? lastUsed}) {
     return ConnectionsCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       name: name ?? this.name,
+      type: type ?? this.type,
+      sshCommand: sshCommand ?? this.sshCommand,
       host: host ?? this.host,
       port: port ?? this.port,
       username: username ?? this.username,
-      authType: authType ?? this.authType,
       password: password ?? this.password,
-      privateKey: privateKey ?? this.privateKey,
-      publicKey: publicKey ?? this.publicKey,
-      passphrase: passphrase ?? this.passphrase,
-      systemKeyPath: systemKeyPath ?? this.systemKeyPath,
       createdAt: createdAt ?? this.createdAt,
       lastUsed: lastUsed ?? this.lastUsed,
     );
@@ -875,6 +748,12 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (sshCommand.present) {
+      map['ssh_command'] = Variable<String>(sshCommand.value);
+    }
     if (host.present) {
       map['host'] = Variable<String>(host.value);
     }
@@ -884,23 +763,8 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
     if (username.present) {
       map['username'] = Variable<String>(username.value);
     }
-    if (authType.present) {
-      map['auth_type'] = Variable<String>(authType.value);
-    }
     if (password.present) {
       map['password'] = Variable<String>(password.value);
-    }
-    if (privateKey.present) {
-      map['private_key'] = Variable<String>(privateKey.value);
-    }
-    if (publicKey.present) {
-      map['public_key'] = Variable<String>(publicKey.value);
-    }
-    if (passphrase.present) {
-      map['passphrase'] = Variable<String>(passphrase.value);
-    }
-    if (systemKeyPath.present) {
-      map['system_key_path'] = Variable<String>(systemKeyPath.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -917,15 +781,12 @@ class ConnectionsCompanion extends UpdateCompanion<Connection> {
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('name: $name, ')
+          ..write('type: $type, ')
+          ..write('sshCommand: $sshCommand, ')
           ..write('host: $host, ')
           ..write('port: $port, ')
           ..write('username: $username, ')
-          ..write('authType: $authType, ')
           ..write('password: $password, ')
-          ..write('privateKey: $privateKey, ')
-          ..write('publicKey: $publicKey, ')
-          ..write('passphrase: $passphrase, ')
-          ..write('systemKeyPath: $systemKeyPath, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastUsed: $lastUsed')
           ..write(')'))
@@ -1093,15 +954,12 @@ typedef $$ConnectionsTableCreateCompanionBuilder = ConnectionsCompanion
   Value<int> id,
   required int userId,
   required String name,
-  required String host,
-  Value<int> port,
-  required String username,
-  Value<String> authType,
+  Value<String> type,
+  Value<String?> sshCommand,
+  Value<String?> host,
+  Value<int?> port,
+  Value<String?> username,
   Value<String?> password,
-  Value<String?> privateKey,
-  Value<String?> publicKey,
-  Value<String?> passphrase,
-  Value<String?> systemKeyPath,
   Value<DateTime> createdAt,
   Value<DateTime?> lastUsed,
 });
@@ -1110,15 +968,12 @@ typedef $$ConnectionsTableUpdateCompanionBuilder = ConnectionsCompanion
   Value<int> id,
   Value<int> userId,
   Value<String> name,
-  Value<String> host,
-  Value<int> port,
-  Value<String> username,
-  Value<String> authType,
+  Value<String> type,
+  Value<String?> sshCommand,
+  Value<String?> host,
+  Value<int?> port,
+  Value<String?> username,
   Value<String?> password,
-  Value<String?> privateKey,
-  Value<String?> publicKey,
-  Value<String?> passphrase,
-  Value<String?> systemKeyPath,
   Value<DateTime> createdAt,
   Value<DateTime?> lastUsed,
 });
@@ -1141,6 +996,12 @@ class $$ConnectionsTableFilterComposer
   ColumnFilters<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sshCommand => $composableBuilder(
+      column: $table.sshCommand, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<String> get host => $composableBuilder(
       column: $table.host, builder: (column) => ColumnFilters(column));
 
@@ -1150,23 +1011,8 @@ class $$ConnectionsTableFilterComposer
   ColumnFilters<String> get username => $composableBuilder(
       column: $table.username, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get authType => $composableBuilder(
-      column: $table.authType, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get password => $composableBuilder(
       column: $table.password, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get privateKey => $composableBuilder(
-      column: $table.privateKey, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get publicKey => $composableBuilder(
-      column: $table.publicKey, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get passphrase => $composableBuilder(
-      column: $table.passphrase, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get systemKeyPath => $composableBuilder(
-      column: $table.systemKeyPath, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -1193,6 +1039,12 @@ class $$ConnectionsTableOrderingComposer
   ColumnOrderings<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sshCommand => $composableBuilder(
+      column: $table.sshCommand, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get host => $composableBuilder(
       column: $table.host, builder: (column) => ColumnOrderings(column));
 
@@ -1202,24 +1054,8 @@ class $$ConnectionsTableOrderingComposer
   ColumnOrderings<String> get username => $composableBuilder(
       column: $table.username, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get authType => $composableBuilder(
-      column: $table.authType, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get password => $composableBuilder(
       column: $table.password, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get privateKey => $composableBuilder(
-      column: $table.privateKey, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get publicKey => $composableBuilder(
-      column: $table.publicKey, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get passphrase => $composableBuilder(
-      column: $table.passphrase, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get systemKeyPath => $composableBuilder(
-      column: $table.systemKeyPath,
-      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
@@ -1246,6 +1082,12 @@ class $$ConnectionsTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get sshCommand => $composableBuilder(
+      column: $table.sshCommand, builder: (column) => column);
+
   GeneratedColumn<String> get host =>
       $composableBuilder(column: $table.host, builder: (column) => column);
 
@@ -1255,23 +1097,8 @@ class $$ConnectionsTableAnnotationComposer
   GeneratedColumn<String> get username =>
       $composableBuilder(column: $table.username, builder: (column) => column);
 
-  GeneratedColumn<String> get authType =>
-      $composableBuilder(column: $table.authType, builder: (column) => column);
-
   GeneratedColumn<String> get password =>
       $composableBuilder(column: $table.password, builder: (column) => column);
-
-  GeneratedColumn<String> get privateKey => $composableBuilder(
-      column: $table.privateKey, builder: (column) => column);
-
-  GeneratedColumn<String> get publicKey =>
-      $composableBuilder(column: $table.publicKey, builder: (column) => column);
-
-  GeneratedColumn<String> get passphrase => $composableBuilder(
-      column: $table.passphrase, builder: (column) => column);
-
-  GeneratedColumn<String> get systemKeyPath => $composableBuilder(
-      column: $table.systemKeyPath, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1306,15 +1133,12 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<int> userId = const Value.absent(),
             Value<String> name = const Value.absent(),
-            Value<String> host = const Value.absent(),
-            Value<int> port = const Value.absent(),
-            Value<String> username = const Value.absent(),
-            Value<String> authType = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<String?> sshCommand = const Value.absent(),
+            Value<String?> host = const Value.absent(),
+            Value<int?> port = const Value.absent(),
+            Value<String?> username = const Value.absent(),
             Value<String?> password = const Value.absent(),
-            Value<String?> privateKey = const Value.absent(),
-            Value<String?> publicKey = const Value.absent(),
-            Value<String?> passphrase = const Value.absent(),
-            Value<String?> systemKeyPath = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime?> lastUsed = const Value.absent(),
           }) =>
@@ -1322,15 +1146,12 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             id: id,
             userId: userId,
             name: name,
+            type: type,
+            sshCommand: sshCommand,
             host: host,
             port: port,
             username: username,
-            authType: authType,
             password: password,
-            privateKey: privateKey,
-            publicKey: publicKey,
-            passphrase: passphrase,
-            systemKeyPath: systemKeyPath,
             createdAt: createdAt,
             lastUsed: lastUsed,
           ),
@@ -1338,15 +1159,12 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             required int userId,
             required String name,
-            required String host,
-            Value<int> port = const Value.absent(),
-            required String username,
-            Value<String> authType = const Value.absent(),
+            Value<String> type = const Value.absent(),
+            Value<String?> sshCommand = const Value.absent(),
+            Value<String?> host = const Value.absent(),
+            Value<int?> port = const Value.absent(),
+            Value<String?> username = const Value.absent(),
             Value<String?> password = const Value.absent(),
-            Value<String?> privateKey = const Value.absent(),
-            Value<String?> publicKey = const Value.absent(),
-            Value<String?> passphrase = const Value.absent(),
-            Value<String?> systemKeyPath = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime?> lastUsed = const Value.absent(),
           }) =>
@@ -1354,15 +1172,12 @@ class $$ConnectionsTableTableManager extends RootTableManager<
             id: id,
             userId: userId,
             name: name,
+            type: type,
+            sshCommand: sshCommand,
             host: host,
             port: port,
             username: username,
-            authType: authType,
             password: password,
-            privateKey: privateKey,
-            publicKey: publicKey,
-            passphrase: passphrase,
-            systemKeyPath: systemKeyPath,
             createdAt: createdAt,
             lastUsed: lastUsed,
           ),

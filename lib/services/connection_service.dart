@@ -18,19 +18,22 @@ class ConnectionService {
   }
 
   Future<int> addConnection(entity.Connection connection) async {
+    print('💾 Сохранение подключения:');
+    print('   Тип: ${connection.type}');
+    print('   Команда: ${connection.sshCommand}');
+    print('   Host: ${connection.host}');
+    print('   Username: ${connection.username}');
+
     return await _database.into(_database.connections).insert(
       ConnectionsCompanion.insert(
         userId: connection.userId,
         name: connection.name,
-        host: connection.host,
+        type: drift.Value(connection.type.toString()),
+        sshCommand: drift.Value(connection.sshCommand),
+        host: drift.Value(connection.host),
         port: drift.Value(connection.port),
-        username: connection.username,
-        authType: drift.Value(connection.authType.toString()),
+        username: drift.Value(connection.username),
         password: drift.Value(connection.password),
-        privateKey: drift.Value(connection.privateKey),
-        publicKey: drift.Value(connection.publicKey),
-        passphrase: drift.Value(connection.passphrase),
-        systemKeyPath: drift.Value(connection.systemKeyPath),  // ⬅️ ДОБАВЛЕНО
       ),
     );
   }
@@ -53,39 +56,17 @@ class ConnectionService {
         .write(ConnectionsCompanion(lastUsed: drift.Value(DateTime.now())));
   }
 
-  Future<void> updateConnection(entity.Connection connection) async {
-    if (connection.id == null) return;
-
-    await (_database.update(_database.connections)
-      ..where((tbl) => tbl.id.equals(connection.id!)))
-        .write(ConnectionsCompanion(
-      name: drift.Value(connection.name),
-      host: drift.Value(connection.host),
-      port: drift.Value(connection.port),
-      username: drift.Value(connection.username),
-      authType: drift.Value(connection.authType.toString()),
-      password: drift.Value(connection.password),
-      privateKey: drift.Value(connection.privateKey),
-      publicKey: drift.Value(connection.publicKey),
-      passphrase: drift.Value(connection.passphrase),
-      systemKeyPath: drift.Value(connection.systemKeyPath),  // ⬅️ ДОБАВЛЕНО
-    ));
-  }
-
   entity.Connection _mapToEntity(Connection dbConnection) {
     return entity.Connection(
       id: dbConnection.id,
       userId: dbConnection.userId,
       name: dbConnection.name,
+      type: entity.ConnectionType.fromString(dbConnection.type),
+      sshCommand: dbConnection.sshCommand,
       host: dbConnection.host,
       port: dbConnection.port,
       username: dbConnection.username,
-      authType: entity.AuthType.fromString(dbConnection.authType),
       password: dbConnection.password,
-      privateKey: dbConnection.privateKey,
-      publicKey: dbConnection.publicKey,
-      passphrase: dbConnection.passphrase,
-      systemKeyPath: dbConnection.systemKeyPath,  // ⬅️ ДОБАВЛЕНО
       createdAt: dbConnection.createdAt,
       lastUsed: dbConnection.lastUsed,
     );

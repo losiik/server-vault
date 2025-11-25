@@ -10,72 +10,79 @@ class SSHService {
 
   bool get isConnected => _client != null;
 
-  /// Подключение к SSH серверу
   Future<bool> connect(Connection connection) async {
     try {
+      print('🔌 Подключение SSH:');
+      print('   Тип: ${connection.type}');
+      print('   Host: ${connection.effectiveHost}');
+      print('   Port: ${connection.effectivePort}');
+      print('   Username: ${connection.effectiveUsername}');
+
       final socket = await SSHSocket.connect(
-        connection.host,
-        connection.port,
+        connection.effectiveHost,
+        connection.effectivePort,
+        timeout: const Duration(seconds: 10),
       );
 
-      if (connection.authType == AuthType.password) {
-        // Авторизация по паролю
+      if (connection.type == ConnectionType.password) {
+        print('🔐 Авторизация по паролю...');
         _client = SSHClient(
           socket,
-          username: connection.username,
+          username: connection.effectiveUsername,
           onPasswordRequest: () => connection.password ?? '',
         );
-      } else if (connection.authType == AuthType.key) {
-        // Авторизация по загруженному ключу
-        if (connection.privateKey == null) {
-          throw Exception('Private key is required');
+      } else {
+        print('🔑 Авторизация по системным ключам...');
+        final keyPairs = await _loadSystemKeys();
+
+        if (keyPairs.isEmpty) {
+          throw Exception('Не найдено ни одного SSH-ключа в ~/.ssh/');
         }
+
+        print('   Найдено ключей: ${keyPairs.length}');
 
         _client = SSHClient(
           socket,
-          username: connection.username,
-          identities: [
-            ...SSHKeyPair.fromPem(connection.privateKey!),
-          ],
-        );
-      } else if (connection.authType == AuthType.systemKey) {
-        // Авторизация по системному ключу
-        final keyPath = connection.systemKeyPath ?? _getDefaultKeyPath();
-        final keyFile = File(keyPath);
-
-        if (!await keyFile.exists()) {
-          throw Exception('SSH ключ не найден: $keyPath');
-        }
-
-        final privateKeyContent = await keyFile.readAsString();
-
-        _client = SSHClient(
-          socket,
-          username: connection.username,
-          identities: [
-            ...SSHKeyPair.fromPem(privateKeyContent),
-          ],
+          username: connection.effectiveUsername,
+          identities: keyPairs,
+          onPasswordRequest: () => '',
         );
       }
 
+      print('✓ Подключение установлено');
       return true;
     } catch (e) {
-      print('SSH connection error: $e');
+      print('✗ SSH connection error: $e');
       return false;
     }
   }
 
-  /// Получить путь к ключу по умолчанию
-  String _getDefaultKeyPath() {
+  Future<List<SSHKeyPair>> _loadSystemKeys() async {
+    final List<SSHKeyPair> keys = [];
     final home = Platform.environment['HOME'] ??
         Platform.environment['USERPROFILE'] ??
         '';
 
-    if (Platform.isWindows) {
-      return path.join(home, '.ssh', 'id_rsa');
-    } else {
-      return path.join(home, '.ssh', 'id_rsa');
+    final possibleKeys = [
+      path.join(home, '.ssh', 'id_rsa'),
+      path.join(home, '.ssh', 'id_ed25519'),
+      path.join(home, '.ssh', 'id_ecdsa'),
+    ];
+
+    for (final keyPath in possibleKeys) {
+      try {
+        final file = File(keyPath);
+        if (await file.exists()) {
+          final content = await file.readAsString();
+          keys.addAll(SSHKeyPair.fromPem(content));
+          print('✓ Загружен ключ: $keyPath');
+        }
+      } catch (e) {
+        print('✗ Не удалось загрузить ключ $keyPath: $e');
+      }
     }
+
+    return keys;
   }
 
   Future<SSHSession?> openShell() async {

@@ -15,7 +15,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -24,12 +24,9 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        if (from < 2) {
+        if (from < 5) {
+          await m.deleteTable('connections');
           await m.createTable(connections);
-        }
-        if (from < 3) {
-          // Добавляем новое поле
-          await m.addColumn(connections, connections.systemKeyPath as GeneratedColumn<Object>);
         }
       },
     );
